@@ -119,7 +119,7 @@ export default function Home() {
         </div>
         <img
           src="/truck_parcel.png"
-          alt=""
+          alt="A truck running on a long road"
           className="max-h-[550px] w-full object-cover flip rounded"
         />
       </div>
@@ -175,7 +175,7 @@ export default function Home() {
             </button>
           </div>
         </form>
-        <img className="grow w-2/4 rounded max-sm:hidden" src="/dog_parcel.png" alt="" />
+        <img className="grow w-2/4 rounded max-sm:hidden" src="/dog_parcel.png" alt="A dog with a parcel" />
       </div>
     </main>
     </>
