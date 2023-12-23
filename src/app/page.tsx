@@ -1,113 +1,183 @@
-import Image from 'next/image'
+'use client'
+import { ChangeEvent, FormEvent, useState } from "react";
+import { toast } from 'react-toastify';
+import Input from "./Components/Input";
+import { API_BASE_URL } from "./utils/site-constants";
+import { validateEmail } from "./utils/utils";
+
+
+const INPUT_INITIAL_VALUE = { value: "", error: false, helperText: "" };
 
 export default function Home() {
-  return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
+  const [firstName, setFirstName] = useState(INPUT_INITIAL_VALUE);
+  const [lastName, setLastName] = useState(INPUT_INITIAL_VALUE);
+  const [email, setEmail] = useState(INPUT_INITIAL_VALUE);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px] z-[-1]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const {value, id} = event.target;
+    if(id === "user_email"){
+      setEmail({
+        value,
+        error: false,
+        helperText: ""
+      })
+      return;
+    }
+    if(id === "user_last_name"){
+      setLastName({
+        value,
+        error: false,
+        helperText: ""
+      })
+      return;
+    }
+    setFirstName({
+      value,
+      error: false,
+      helperText: ""
+    })
+  };
+
+  const validateForm = () => {
+    let isFormValid = true;
+    if(firstName.value.trim().length === 0){
+      isFormValid = isFormValid && false;
+      setFirstName((prevValue) => ({...prevValue, error: true, helperText: "Please enter your first name."}));
+    }
+    if(lastName.value.trim().length === 0){
+      isFormValid = isFormValid && false;
+      setLastName((prevValue) => ({...prevValue, error: true, helperText: "Please enter your last name."}));
+    }
+    if(email.value.trim().length === 0){
+      isFormValid = isFormValid && false;
+      setEmail((prevValue) => ({...prevValue, error: true, helperText: "Please enter your email address."}));
+    }
+    if(!validateEmail(email.value)){
+      isFormValid = isFormValid && false;
+      setEmail((prevValue) => ({...prevValue, error: true, helperText: "Please enter a valid email address."}));
+    }
+    return isFormValid;
+  }
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if(!validateForm()) return;
+    try{
+      setIsSubmitting(true);
+      const data = {
+        email: email.value,
+        firstName: firstName.value,
+        lastName : lastName.value
+      }
+      const response = await fetch(`${API_BASE_URL}/api/users/create`, {
+        method: "POST",
+        body: JSON.stringify(data),
+        headers: {
+          "Content-Type": "application/json",
+        }
+      });
+      const parsedResponse = await response.json();
+      toast.success("📬 Fantastic! Your message is on its way to us. We can't wait to connect and chat! 🚀", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+      setEmail(INPUT_INITIAL_VALUE);
+      setFirstName(INPUT_INITIAL_VALUE);
+      setLastName(INPUT_INITIAL_VALUE);
+    }catch(e){
+      toast.error("Oops! Something went wrong.", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+      console.log(e);
+    }finally{
+      setIsSubmitting(false);
+    }
+  }
+
+  return (
+    <>
+    <main className="min-h-screen max-w-screen-2xl mx-auto my-auto mb-10">
+      <div className="relative rounded">
+        <div className="absolute headerContainer rounded max-sm:items-end">
+          <h1 className="text-5xl text-white leading-tight w-2/4 font-medium max-sm:w-[80%] max-sm:text-[28px]">
+            Branded tracking pages for Shopify merchants
+          </h1>
+        </div>
+        <img
+          src="/truck_parcel.png"
+          alt=""
+          className="max-h-[550px] w-full object-cover flip rounded"
         />
       </div>
+      <p className="text-2xl text-center m-8 max-sm:text-xl max-sm:text-left">
+        Say good bye to boring Fedex and UPS tracking pages. Use the branded
+        tracking pages to up-sell and cross-sell. Communicate offers and promotions like a pro!
+      </p>
 
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
+      <div className="flex gap-1.5 p-12 border-gray-300 rounded max-sm:p-1 max-sm:shadow-none">
+        <form className="grow w-2/4" onSubmit={handleSubmit} >
+          <h2 className="text-center text-2xl font-semibold mb-6">
+            Get in Touch
           </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
+          <div className="flex flex-col w-3/4 m-[auto] gap-6">
+            <Input
+              helperText={ firstName.error ? firstName.helperText : null}
+              nativeProps={{
+                placeholder: "First Name",
+                type: "text",
+                id: "user_name",
+                onChange: handleChange,
+                value: firstName.value
+              }}
+            />
+            <Input
+              helperText={ lastName.error ? lastName.helperText : null}
+              nativeProps={{
+                placeholder: "Last Name",
+                type: "text",
+                id: "user_last_name",
+                onChange: handleChange,
+                value: lastName.value
+              }}
+            />
+            <Input
+              helperText={ email.error ? email.helperText : null}
+              nativeProps={{
+                placeholder: "Email",
+                type: "text",
+                id: "user_email",
+                onChange: handleChange,
+                value: email.value
+              }}
+            />
+            <button
+              type="submit"
+              className="m-[auto] py-1.5 px-4 w-fit text-white rounded bg-[#ffad53] shadow-md border-gray-300 disabled:text-black disabled:bg-gray-300 disabled:cursor-not-allowed"
+              disabled={isSubmitting}
+            >
+              {
+                isSubmitting ? "Submitting.." : "Submit"
+              }
+            </button>
+          </div>
+        </form>
+        <img className="grow w-2/4 rounded max-sm:hidden" src="/dog_parcel.png" alt="" />
       </div>
     </main>
-  )
+    </>
+  );
 }

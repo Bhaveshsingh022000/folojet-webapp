@@ -4,16 +4,20 @@
 
 :root {
   --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
+  --background-start-rgb: 255, 255, 255;
   --background-end-rgb: 255, 255, 255;
 }
 
-@media (prefers-color-scheme: dark) {
+/* @media (prefers-color-scheme: dark) {
   :root {
     --foreground-rgb: 255, 255, 255;
     --background-start-rgb: 0, 0, 0;
     --background-end-rgb: 0, 0, 0;
   }
+} */
+
+.flip{
+  transform: scaleX(-1);
 }
 
 body {
@@ -24,4 +28,28 @@ body {
       rgb(var(--background-end-rgb))
     )
     rgb(var(--background-start-rgb));
+}
+
+html{
+  font-family: 'Poppins', sans-serif;
+}
+
+.headerContainer{
+  background: linear-gradient(36deg, rgb(0 0 0) 0%, rgb(0 0 0 / 47%) 58%, rgb(0 0 0 / 0%) 100%);
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  padding: 25px;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
